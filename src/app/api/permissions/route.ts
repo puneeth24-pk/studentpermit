@@ -46,7 +46,8 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: 'Invalid Role' }, { status: 403 });
 
     } catch (error: any) {
-        return NextResponse.json({ error: 'Server Error' }, { status: 500 });
+        console.error('Permission Fetch Error:', error);
+        return NextResponse.json({ error: error.message || 'Server Error' }, { status: 500 });
     }
 }
 
@@ -98,6 +99,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: true, permission: newPermission }, { status: 201 });
 
     } catch (error: any) {
-        return NextResponse.json({ error: 'Server Error' }, { status: 500 });
+        console.error('Permission Create Error:', error);
+        return NextResponse.json({ error: error.message || 'Server Error' }, { status: 500 });
     }
 }
