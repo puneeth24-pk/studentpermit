@@ -9,6 +9,7 @@ if (!cached) {
 }
 
 async function dbConnect() {
+    console.log('Connecting to MongoDB...');
     if (!MONGODB_URI) {
         throw new Error('Please define the MONGODB_URI environment variable inside .env.local or Vercel settings');
     }
