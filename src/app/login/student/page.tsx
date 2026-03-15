@@ -20,7 +20,7 @@ export default function StudentLogin() {
             const res = await fetch('/api/auth/student/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ email: email.trim(), password: password.trim() }),
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Login failed');

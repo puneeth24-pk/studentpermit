@@ -8,14 +8,18 @@ export async function POST(request: Request) {
         await dbConnect();
         const { email, otp, newPassword } = await request.json();
 
-        if (!email || !otp || !newPassword) {
+        const cleanEmail = email?.trim() || "";
+        const cleanOtp = otp?.trim() || "";
+        const cleanPassword = newPassword?.trim() || "";
+
+        if (!cleanEmail || !cleanOtp || !cleanPassword) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
         const student = await Student.findOne({
-            email,
-            resetPasswordOtp: otp,
-            resetPasswordExpires: { $gt: Date.now() }
+            email: { $regex: new RegExp(`^${cleanEmail}$`, 'i') },
+            resetPasswordOtp: cleanOtp,
+            resetPasswordExpires: { $gt: new Date() }
         });
 
         if (!student) {
@@ -23,7 +27,7 @@ export async function POST(request: Request) {
         }
 
         const salt = await bcrypt.genSalt(10);
-        student.passwordHash = await bcrypt.hash(newPassword, salt);
+        student.passwordHash = await bcrypt.hash(cleanPassword, salt);
 
         // Clear OTP fields
         student.resetPasswordOtp = undefined;

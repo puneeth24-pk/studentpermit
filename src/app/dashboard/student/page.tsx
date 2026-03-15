@@ -23,6 +23,33 @@ export default function StudentDashboard() {
     const [location, setLocation] = useState<{ lat: number, lng: number } | null>(null);
     const [locationError, setLocationError] = useState('');
 
+    const fetchLocation = () => {
+        setLocationError('Fetching GPS location...');
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setLocation({
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    });
+                    setLocationError('');
+                },
+                (error) => {
+                    setLocationError(
+                        error.code === 1
+                            ? 'Location access denied. Please allow location permissions in your browser settings.'
+                            : 'Unable to retrieve location. Please check your GPS signal.'
+                    );
+                    setLocation(null);
+                },
+                { timeout: 15000, enableHighAccuracy: true, maximumAge: 0 }
+            );
+        } else {
+            setLocationError('Geolocation is not supported by your browser.');
+            setLocation(null);
+        }
+    };
+
     useEffect(() => {
         const token = localStorage.getItem('student_token');
         if (!token) {
@@ -31,28 +58,7 @@ export default function StudentDashboard() {
         }
 
         fetchPermissions(token);
-
-        // Get location — fallback to MITS Angallu campus coordinates
-        const MITS_LAT = 13.8527;
-        const MITS_LNG = 78.9162;
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    setLocation({
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude
-                    });
-                },
-                () => {
-                    setLocationError('GPS denied — using MITS campus location.');
-                    setLocation({ lat: MITS_LAT, lng: MITS_LNG });
-                },
-                { timeout: 8000, enableHighAccuracy: true }
-            );
-        } else {
-            setLocationError('GPS not supported — using MITS campus location.');
-            setLocation({ lat: MITS_LAT, lng: MITS_LNG });
-        }
+        fetchLocation();
     }, []);
 
     const fetchPermissions = async (token: string) => {
@@ -185,7 +191,6 @@ export default function StudentDashboard() {
 
                             {message && <div className="mb-4 text-green-600 text-sm bg-green-50 p-3 rounded">{message}</div>}
                             {error && <div className="mb-4 text-red-500 text-sm bg-red-50 p-3 rounded">{error}</div>}
-                            {locationError && <div className="mb-4 text-amber-600 text-sm bg-amber-50 p-3 rounded">{locationError}</div>}
 
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div>
@@ -222,9 +227,14 @@ export default function StudentDashboard() {
                                     <div className="text-sm text-gray-600">
                                         <p className="font-medium text-gray-900">Auto Location Detected</p>
                                         {location ? (
-                                            <p>{location.lat === 13.8527 ? 'MITS Campus (Fixed)' : `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`}</p>
+                                            <p>{`${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}`}</p>
                                         ) : (
-                                            <p className="text-amber-500">Waiting for GPS...</p>
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-amber-500">{locationError ? locationError : 'Waiting for GPS...'}</p>
+                                                {locationError && locationError !== 'Fetching GPS location...' && (
+                                                    <button type="button" onClick={fetchLocation} className="text-xs bg-amber-100 text-amber-700 hover:bg-amber-200 px-2 py-1 rounded">Retry GPS</button>
+                                                )}
+                                            </div>
                                         )}
                                     </div>
                                 </div>

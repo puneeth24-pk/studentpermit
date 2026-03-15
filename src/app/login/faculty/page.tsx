@@ -20,7 +20,7 @@ export default function FacultyLogin() {
             const res = await fetch('/api/auth/faculty/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ facultyId, password }),
+                body: JSON.stringify({ facultyId: facultyId.trim(), password: password.trim() }),
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Login failed');

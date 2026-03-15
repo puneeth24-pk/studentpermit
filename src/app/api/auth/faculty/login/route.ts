@@ -10,16 +10,19 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { facultyId, password } = body;
 
-        if (!facultyId || !password) {
+        const cleanFacultyId = facultyId?.trim() || "";
+        const cleanPassword = password?.trim() || "";
+
+        if (!cleanFacultyId || !cleanPassword) {
             return NextResponse.json({ error: 'Faculty ID and password are required' }, { status: 400 });
         }
 
-        const faculty = await Faculty.findOne({ facultyId });
+        const faculty = await Faculty.findOne({ facultyId: { $regex: new RegExp(`^${cleanFacultyId}$`, 'i') } });
         if (!faculty) {
             return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
         }
 
-        const isMatch = await bcrypt.compare(password, faculty.passwordHash);
+        const isMatch = await bcrypt.compare(cleanPassword, faculty.passwordHash);
         if (!isMatch) {
             return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
         }

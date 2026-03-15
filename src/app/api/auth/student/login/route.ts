@@ -8,10 +8,10 @@ export async function POST(request: Request) {
     try {
         await dbConnect();
         const body = await request.json();
-        const email = body.email?.trim();
-        const { password } = body;
+        const email = body.email?.trim() || "";
+        const cleanPassword = body.password?.trim() || "";
 
-        if (!email || !password) {
+        if (!email || !cleanPassword) {
             return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
         }
 
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
         }
 
-        const isMatch = await bcrypt.compare(password, student.passwordHash);
+        const isMatch = await bcrypt.compare(cleanPassword, student.passwordHash);
         if (!isMatch) {
             return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
         }
