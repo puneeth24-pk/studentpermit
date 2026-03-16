@@ -14,6 +14,9 @@ export default function StudentDashboard() {
         name: '',
         rollNumber: '',
         purpose: '',
+        department: '',
+        year: '',
+        section: '',
     });
     const [file, setFile] = useState<File | null>(null);
     const [submitting, setSubmitting] = useState(false);
@@ -125,7 +128,7 @@ export default function StudentDashboard() {
             if (!res.ok) throw new Error(data.error || 'Failed to submit request');
 
             setMessage('Permission request submitted successfully!');
-            setFormData({ name: '', rollNumber: '', purpose: '' });
+            setFormData({ name: '', rollNumber: '', purpose: '', department: '', year: '', section: '' });
             setFile(null);
             fetchPermissions(token!);
         } catch (err: any) {
@@ -206,6 +209,44 @@ export default function StudentDashboard() {
                                     <textarea required value={formData.purpose} onChange={e => setFormData({ ...formData, purpose: e.target.value })} className="w-full border-gray-300 rounded-lg px-3 py-2 border focus:ring-primary focus:border-primary" rows={3} placeholder="Reason for permission"></textarea>
                                 </div>
 
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                                        <select required value={formData.department} onChange={e => setFormData({ ...formData, department: e.target.value })} className="w-full border-gray-300 rounded-lg px-3 py-2 border focus:ring-primary focus:border-primary">
+                                            <option value="">Select Dept</option>
+                                            <option value="CSE">CSE</option>
+                                            <option value="ECE">ECE</option>
+                                            <option value="EEE">EEE</option>
+                                            <option value="ME">ME</option>
+                                            <option value="CE">CE</option>
+                                            <option value="AI">AI</option>
+                                            <option value="ADS">ADS</option>
+                                            <option value="CST">CST</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                                        <select required value={formData.year} onChange={e => setFormData({ ...formData, year: e.target.value })} className="w-full border-gray-300 rounded-lg px-3 py-2 border focus:ring-primary focus:border-primary">
+                                            <option value="">Select Year</option>
+                                            <option value="I">I</option>
+                                            <option value="II">II</option>
+                                            <option value="III">III</option>
+                                            <option value="IV">IV</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Section</label>
+                                        <select required value={formData.section} onChange={e => setFormData({ ...formData, section: e.target.value })} className="w-full border-gray-300 rounded-lg px-3 py-2 border focus:ring-primary focus:border-primary">
+                                            <option value="">Select Sec</option>
+                                            <option value="A">A</option>
+                                            <option value="B">B</option>
+                                            <option value="C">C</option>
+                                            <option value="D">D</option>
+                                            <option value="E">E</option>
+                                        </select>
+                                    </div>
+                                </div>
+
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Support Document (Optional)</label>
                                     <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
@@ -257,6 +298,7 @@ export default function StudentDashboard() {
                                     <thead className="text-xs text-gray-500 uppercase bg-gray-50">
                                         <tr>
                                             <th className="px-6 py-3">Date & Time</th>
+                                            <th className="px-6 py-3">Academic Info</th>
                                             <th className="px-6 py-3">Purpose</th>
                                             <th className="px-6 py-3">Status</th>
                                         </tr>
@@ -271,6 +313,9 @@ export default function StudentDashboard() {
                                                 <tr key={p._id} className="bg-white border-b hover:bg-gray-50">
                                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                                                         {new Date(p.time).toLocaleString()}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-600">
+                                                        {p.department} - {p.year} - {p.section}
                                                     </td>
                                                     <td className="px-6 py-4">{p.purpose}</td>
                                                     <td className="px-6 py-4">

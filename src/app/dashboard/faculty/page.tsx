@@ -8,6 +8,11 @@ export default function FacultyDashboard() {
     const router = useRouter();
     const [permissions, setPermissions] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [filters, setFilters] = useState({
+        department: '',
+        year: '',
+        section: '',
+    });
 
     useEffect(() => {
         const token = localStorage.getItem('faculty_token');
@@ -15,12 +20,17 @@ export default function FacultyDashboard() {
             router.push('/login/faculty');
             return;
         }
-        fetchPermissions(token);
-    }, []);
+        fetchPermissions(token, filters);
+    }, [filters]);
 
-    const fetchPermissions = async (token: string) => {
+    const fetchPermissions = async (token: string, currentFilters: any) => {
         try {
-            const res = await fetch('/api/permissions', {
+            const queryParams = new URLSearchParams();
+            if (currentFilters.department) queryParams.append('department', currentFilters.department);
+            if (currentFilters.year) queryParams.append('year', currentFilters.year);
+            if (currentFilters.section) queryParams.append('section', currentFilters.section);
+
+            const res = await fetch(`/api/permissions?${queryParams.toString()}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
@@ -107,9 +117,69 @@ export default function FacultyDashboard() {
                     </button>
                 </header>
 
-                <div className="mb-8">
-                    <h1 className="text-2xl font-bold text-gray-900">Permission Requests Overview</h1>
-                    <p className="text-gray-600 mt-1">Review and manage student digital permission requests.</p>
+                <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900">Permission Requests Overview</h1>
+                        <p className="text-gray-600 mt-1">Review and manage student digital permission requests.</p>
+                    </div>
+
+                    <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-wrap gap-4 items-end">
+                        <div className="flex flex-col gap-1">
+                            <label className="text-xs font-semibold text-gray-500 uppercase">Department</label>
+                            <select
+                                value={filters.department}
+                                onChange={e => setFilters({ ...filters, department: e.target.value })}
+                                className="border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                            >
+                                <option value="">All Departments</option>
+                                <option value="CSE">CSE</option>
+                                <option value="ECE">ECE</option>
+                                <option value="EEE">EEE</option>
+                                <option value="ME">ME</option>
+                                <option value="CE">CE</option>
+                                <option value="AI">AI</option>
+                                <option value="ADS">ADS</option>
+                                <option value="CST">CST</option>
+                            </select>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-xs font-semibold text-gray-500 uppercase">Year</label>
+                            <select
+                                value={filters.year}
+                                onChange={e => setFilters({ ...filters, year: e.target.value })}
+                                className="border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                            >
+                                <option value="">All Years</option>
+                                <option value="I">I Year</option>
+                                <option value="II">II Year</option>
+                                <option value="III">III Year</option>
+                                <option value="IV">IV Year</option>
+                            </select>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-xs font-semibold text-gray-500 uppercase">Section</label>
+                            <select
+                                value={filters.section}
+                                onChange={e => setFilters({ ...filters, section: e.target.value })}
+                                className="border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                            >
+                                <option value="">All Sections</option>
+                                <option value="A">Sec A</option>
+                                <option value="B">Sec B</option>
+                                <option value="C">Sec C</option>
+                                <option value="D">Sec D</option>
+                                <option value="E">Sec E</option>
+                            </select>
+                        </div>
+                        {(filters.department || filters.year || filters.section) && (
+                            <button
+                                onClick={() => setFilters({ department: '', year: '', section: '' })}
+                                className="text-xs text-indigo-600 hover:text-indigo-800 font-medium pb-2"
+                            >
+                                Clear Filters
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -135,6 +205,9 @@ export default function FacultyDashboard() {
                                         <tr key={p._id} className="bg-white hover:bg-gray-50/50 transition-colors">
                                             <td className="px-6 py-4">
                                                 <div className="font-medium text-gray-900">{p.name}</div>
+                                                <div className="text-gray-500 text-xs font-medium">
+                                                    {p.department} - {p.year} Year - Sec {p.section}
+                                                </div>
                                                 <div className="text-gray-500">{p.rollNumber}</div>
                                                 <div className="text-xs text-gray-400 mt-0.5">{p.studentEmail}</div>
                                             </td>

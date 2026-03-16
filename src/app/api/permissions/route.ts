@@ -28,10 +28,21 @@ export async function GET(request: Request) {
         ) - 5.5 * 60 * 60 * 1000); // subtract 5:30 to convert back to UTC
 
         if (decoded.role === 'faculty') {
-            // Show only today's (IST) permission letters
-            const permissions = await Permission.find({
+            const { searchParams } = new URL(request.url);
+            const department = searchParams.get('department');
+            const year = searchParams.get('year');
+            const section = searchParams.get('section');
+
+            const query: any = {
                 createdAt: { $gte: startOfTodayIST }
-            }).sort({ createdAt: -1 });
+            };
+
+            if (department) query.department = department;
+            if (year) query.year = year;
+            if (section) query.section = section;
+
+            // Show filtered today's (IST) permission letters
+            const permissions = await Permission.find(query).sort({ createdAt: -1 });
             return NextResponse.json({ success: true, permissions }, { status: 200 });
         }
         else if (decoded.role === 'student') {
@@ -67,9 +78,9 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json();
-        const { name, rollNumber, purpose, fileUrl, location, time } = body;
+        const { name, rollNumber, purpose, department, year, section, fileUrl, location, time } = body;
 
-        if (!name || !rollNumber || !purpose) {
+        if (!name || !rollNumber || !purpose || !department || !year || !section) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
@@ -90,6 +101,9 @@ export async function POST(request: Request) {
             name,
             rollNumber,
             purpose,
+            department,
+            year,
+            section,
             fileUrl: safeFileUrl,
             location,
             time: time || new Date(),

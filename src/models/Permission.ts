@@ -21,6 +21,18 @@ const PermissionSchema = new mongoose.Schema({
         type: String,
         required: false,
     },
+    department: {
+        type: String,
+        required: true,
+    },
+    year: {
+        type: String,
+        required: true,
+    },
+    section: {
+        type: String,
+        required: true,
+    },
     location: {
         lat: { type: Number },
         lng: { type: Number },
